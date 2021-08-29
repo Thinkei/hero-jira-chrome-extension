@@ -3,7 +3,11 @@ import { Input, Typography, Button, Icon } from "hero-design";
 import Storage, { JiraConfig } from "../Storage";
 import { useTheme } from "styled-components";
 
-export default () => {
+export default ({
+  onSaveConfig,
+}: {
+  onSaveConfig: (c: JiraConfig) => void;
+}) => {
   const [host, setHost] = React.useState<string>("");
   const [token, setToken] = React.useState<string>("");
   const [email, setEmail] = React.useState<string>("");
@@ -13,7 +17,6 @@ export default () => {
 
   React.useEffect(() => {
     Storage.get().then((config) => {
-      console.log({ config });
       setHost(config.host || "");
       setToken(config.token || "");
       setEmail(config.email || "");
@@ -43,6 +46,7 @@ export default () => {
           setShowedSuccess(true);
         }
       );
+      onSaveConfig({ host, token, email });
     },
     []
   );
@@ -55,7 +59,7 @@ export default () => {
   };
 
   return (
-    <div style={{ textAlign: "left" }}>
+    <div>
       <Typography.Text
         tagName="label"
         fontWeight="semi-bold"

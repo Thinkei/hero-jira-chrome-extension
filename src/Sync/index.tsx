@@ -1,17 +1,15 @@
-import { Empty, Button } from "hero-design";
+import { Empty, Button, Spinner } from "hero-design";
 import React from "react";
-import Storage, { JiraConfig } from "../Storage";
+import { JiraConfig } from "../Storage";
 import SyncWithClient from "./SyncWithClient";
 
-export default ({ goToConfiguration }: { goToConfiguration: () => void }) => {
-  const [config, setConfig] = React.useState<JiraConfig | undefined>(undefined);
-
-  React.useEffect(() => {
-    Storage.get().then((config) => {
-      setConfig(config);
-    });
-  }, []);
-
+export default ({
+  goToConfiguration,
+  config,
+}: {
+  goToConfiguration: () => void;
+  config: JiraConfig | undefined;
+}) => {
   if (
     config !== undefined &&
     config.email !== undefined &&
