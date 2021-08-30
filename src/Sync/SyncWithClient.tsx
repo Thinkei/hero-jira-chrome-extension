@@ -1,7 +1,8 @@
-import { Alert, Button, Spinner } from "hero-design";
+import { Alert, Button, Empty, Spinner } from "hero-design";
 import React from "react";
 import { sendGithubMessage, Response } from "../Messaging/GithubMessage";
 import JiraCardDetail from "./JiraCardDetail";
+import CreatingJiraCardModal from "./CreatingJiraCardModal";
 
 export default ({
   host,
@@ -14,6 +15,7 @@ export default ({
 }) => {
   const [response, setResponse] = React.useState<Response | undefined>();
   const [loading, setLoading] = React.useState<boolean>(true);
+  const [openModal, setOpenModal] = React.useState<boolean>(false);
 
   React.useEffect(() => {
     sendGithubMessage((response) => {
@@ -38,12 +40,30 @@ export default ({
       return <Alert intent="warning" content={response.errorMessage} />;
     case "PullResponse":
       const jiraKey = response.jiraKey;
-      if (jiraKey) {
+      if (jiraKey === undefined) {
         return (
-          <Alert
-            intent="warning"
-            content={"Can't extract Jira ID from pull request title"}
-          />
+          <>
+            <Empty
+              extra={
+                <Button
+                  icon="add"
+                  variant="filled"
+                  intent="primary"
+                  text="Create a Jira card"
+                  onClick={() => setOpenModal(true)}
+                />
+              }
+              text="Can't extract Jira ID from pull request title"
+            />
+            {openModal && (
+              <CreatingJiraCardModal
+                host={host}
+                token={token}
+                email={email}
+                closeModal={() => setOpenModal(false)}
+              />
+            )}
+          </>
         );
       }
       return (

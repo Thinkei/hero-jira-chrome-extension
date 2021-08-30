@@ -26,6 +26,12 @@ export interface Issue {
     summary: string;
     // Card body
     description: string;
+    status: {
+      name: IssueStatusName;
+    };
+    issuetype: {
+      name: IssueTypeName;
+    };
   };
   key: string;
 }
