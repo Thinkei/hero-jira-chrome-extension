@@ -51,7 +51,14 @@ export default ({
         <li>Title: {issue.fields.description}</li>
         <li>Summary: {issue.fields.summary}</li>
         <li>
-          Status: <Status value={issue.fields.status.name} />
+          Status:
+          <Status
+            value={issue.fields.status.name}
+            host={host}
+            token={token}
+            email={email}
+            jiraKey={jiraKey}
+          />
         </li>
       </ul>
     </>

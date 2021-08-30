@@ -14,6 +14,11 @@ export interface Comment {
   updated: string;
 }
 
+export interface Transition {
+  id: string;
+  name: string;
+}
+
 export interface Issue {
   fields: {
     assignee: null | Person;
@@ -26,9 +31,7 @@ export interface Issue {
     summary: string;
     // Card body
     description: string;
-    status: {
-      name: IssueStatusName;
-    };
+    status: Transition;
     issuetype: {
       name: IssueTypeName;
     };
@@ -37,5 +40,3 @@ export interface Issue {
 }
 
 export type IssueTypeName = "Task" | "Story" | "Bug";
-
-export type IssueStatusName = "Done" | "To Do" | "In Progress";

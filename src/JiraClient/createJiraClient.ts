@@ -1,13 +1,19 @@
 import axios from "axios";
 
-import { Issue, IssueTypeName } from "./types";
+import { Issue, Transition, IssueTypeName } from "./types";
 import { makeUrl } from "./utils";
+
+type TransitionsResponse = {
+  transitions: Array<Transition>;
+};
 
 const createJiraClient = (baseUrl: string, token: string, email: string) => {
   const headers = {
     Authorization: `Basic ${Buffer.from(`${email}:${token}`).toString(
       "base64"
     )}`,
+    Accept: "application/json",
+    "Content-Type": "application/json",
   };
 
   const getIssue = async (key: string) => {
@@ -34,21 +40,50 @@ const createJiraClient = (baseUrl: string, token: string, email: string) => {
     const response = await axios.post<Issue>(
       makeUrl(baseUrl, "rest/api/2/issue"),
       {
-        headers,
-        body: {
-          fields: {
-            summary,
-            description,
-            project: { key: projectKey },
-            issueType: { name: issueTypeName },
-          },
+        fields: {
+          summary,
+          description,
+          project: { key: projectKey },
+          issueType: { name: issueTypeName },
         },
+      },
+      {
+        headers,
       }
     );
     return response.data;
   };
 
-  return { getIssue, createIssue };
+  const getIssueTransisions = async (key: string) => {
+    const response = await axios.get<TransitionsResponse>(
+      makeUrl(baseUrl, "rest/api/2/issue", key, "transitions"),
+      {
+        headers,
+      }
+    );
+    return response.data.transitions;
+  };
+
+  const updateIssueStatus = async ({
+    key,
+    transitionId,
+  }: {
+    key: string;
+    transitionId: string;
+  }) => {
+    const response = await axios.post<undefined>(
+      makeUrl(baseUrl, "rest/api/3/issue", key, "transitions"),
+      {
+        transition: { id: transitionId },
+      },
+      {
+        headers,
+      }
+    );
+    return response.data;
+  };
+
+  return { getIssue, createIssue, getIssueTransisions, updateIssueStatus };
 };
 
 export default createJiraClient;
