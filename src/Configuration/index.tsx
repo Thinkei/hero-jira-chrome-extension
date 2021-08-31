@@ -2,26 +2,20 @@ import React from "react";
 import { Input, Typography, Button, Icon } from "hero-design";
 import Storage, { JiraConfig } from "../Storage";
 import { useTheme } from "styled-components";
+import JiraConfigContext from "../context/JiraConfigContext";
 
 export default ({
   onSaveConfig,
 }: {
   onSaveConfig: (c: JiraConfig) => void;
 }) => {
-  const [host, setHost] = React.useState<string>("");
-  const [token, setToken] = React.useState<string>("");
-  const [email, setEmail] = React.useState<string>("");
+  const config = React.useContext(JiraConfigContext);
+  const [host, setHost] = React.useState<string>(config.host);
+  const [token, setToken] = React.useState<string>(config.token);
+  const [email, setEmail] = React.useState<string>(config.email);
   const [dirty, setDirty] = React.useState<boolean>(false);
   const [showedToken, setShowedToken] = React.useState<boolean>(false);
   const [showedSuccess, setShowedSuccess] = React.useState<boolean>(false);
-
-  React.useEffect(() => {
-    Storage.get().then((config) => {
-      setHost(config.host || "");
-      setToken(config.token || "");
-      setEmail(config.email || "");
-    });
-  }, []);
 
   React.useEffect(() => {
     let timerId: NodeJS.Timeout;
@@ -59,7 +53,7 @@ export default ({
   };
 
   return (
-    <div>
+    <form onSubmit={() => saveToStorage({ host, token, email })}>
       <Typography.Text
         tagName="label"
         fontWeight="semi-bold"
@@ -67,6 +61,7 @@ export default ({
       >
         Host
         <Input
+          required
           value={host}
           placeholder="Jira host..."
           onChange={(e) => {
@@ -82,6 +77,7 @@ export default ({
       >
         Jira token
         <Input
+          required
           value={token}
           placeholder="Jira secret token..."
           onChange={(e) => {
@@ -104,6 +100,7 @@ export default ({
       >
         Jira email
         <Input
+          required
           value={email}
           placeholder="Your Jira email..."
           onChange={(e) => {
@@ -120,9 +117,9 @@ export default ({
         }}
       >
         <Button
+          type="submit"
           disabled={dirty === false}
           text="Save"
-          onClick={() => saveToStorage({ host, token, email })}
           size="small"
         />
         {showedSuccess && (
@@ -145,6 +142,6 @@ export default ({
           </Typography.Text>
         )}
       </div>
-    </div>
+    </form>
   );
 };

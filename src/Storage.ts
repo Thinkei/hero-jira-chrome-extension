@@ -1,7 +1,7 @@
 export interface JiraConfig {
-  host?: string;
-  token?: string;
-  email?: string;
+  host: string;
+  token: string;
+  email: string;
 }
 
 const KEY = "jiraConfig";
@@ -11,18 +11,13 @@ const set = (jiraConfig: JiraConfig, onDone?: () => void) => {
 };
 
 const get = () => {
-  return new Promise<JiraConfig>((resolve) => {
+  return new Promise<JiraConfig | undefined>((resolve) => {
     chrome.storage.local.get(KEY, (json) => {
-      const config = JSON.parse(json[KEY]);
-      const host = config.host as string | undefined;
-      const token = config.token as string | undefined;
-      const email = config.email as string | undefined;
-
-      resolve({
-        host,
-        token,
-        email,
-      });
+      if (json[KEY] !== undefined) {
+        const config = JSON.parse(json[KEY]) as JiraConfig | undefined;
+        resolve(config);
+      }
+      resolve(undefined);
     });
   });
 };

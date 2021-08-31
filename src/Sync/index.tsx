@@ -1,44 +1,61 @@
-import { Empty, Button, Spinner } from "hero-design";
 import React from "react";
-import { JiraConfig } from "../Storage";
-import SyncWithClient from "./SyncWithClient";
+import { sendGithubMessage, Response } from "../Messaging/GithubMessage";
+import JiraCardDetail from "./JiraCardDetail";
+import CreatingJiraCardModal from "./CreatingJiraCardModal";
+import { Alert, Button, Empty, Spinner } from "hero-design";
 
-export default ({
-  goToConfiguration,
-  config,
-}: {
-  goToConfiguration: () => void;
-  config: JiraConfig | undefined;
-}) => {
-  if (
-    config !== undefined &&
-    config.email !== undefined &&
-    config.email !== "" &&
-    config.host !== undefined &&
-    config.host !== "" &&
-    config.token !== undefined &&
-    config.token !== ""
-  ) {
+export default () => {
+  const [response, setResponse] = React.useState<Response | undefined>();
+  const [loading, setLoading] = React.useState<boolean>(true);
+  const [openModal, setOpenModal] = React.useState<boolean>(false);
+  console.log(response);
+
+  React.useEffect(() => {
+    sendGithubMessage((response) => {
+      setResponse(response);
+      setLoading(false);
+    });
+  }, []);
+
+  if (loading === true) return <Spinner />;
+
+  if (response === undefined) {
     return (
-      <SyncWithClient
-        host={config.host}
-        token={config.token}
-        email={config.email}
+      <Alert
+        intent="warning"
+        content={"Only support github pull or issue page"}
       />
     );
   }
 
-  return (
-    <Empty
-      text="Missing or not yet configured!"
-      extra={
-        <Button
-          icon="add"
-          intent="primary"
-          text="Go to Configuration"
-          onClick={goToConfiguration}
-        />
+  switch (response.__tag) {
+    case "ErrorResponse":
+      return <Alert intent="warning" content={response.errorMessage} />;
+    case "PullResponse":
+      const jiraKey = response.jiraKey;
+      if (jiraKey === undefined) {
+        return (
+          <>
+            <Empty
+              extra={
+                <Button
+                  icon="add"
+                  variant="filled"
+                  intent="primary"
+                  text="Create a Jira card"
+                  onClick={() => setOpenModal(true)}
+                />
+              }
+              text="Can't extract Jira ID from pull request title"
+            />
+            {openModal && (
+              <CreatingJiraCardModal closeModal={() => setOpenModal(false)} />
+            )}
+          </>
+        );
       }
-    />
-  );
+      return <JiraCardDetail jiraKey={jiraKey} />;
+    case "IssueResponse":
+      return <div>{response.title}</div>;
+  }
 };

@@ -33,15 +33,11 @@ export interface Issue {
     description: string;
     status: Transition;
     issuetype: {
-      name: IssueTypeName;
+      name: string;
     };
   };
   key: string;
 }
-
-export type IssueTypeName = "Task" | "Story" | "Bug";
-
-export type IssueStatusName = "Done" | "To Do" | "In Progress";
 
 export interface IssueCreationFields {
   projectId: string;
