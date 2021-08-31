@@ -1,10 +1,6 @@
 import React, { Dispatch, SetStateAction } from "react";
 import { Modal, Typography, Input, Select, Button, Spinner } from "hero-design";
-import {
-	IssueTypeName,
-	IssueCreationFields,
-	Project,
-} from "../JiraClient/types";
+import { IssueCreationFields, Project } from "../JiraClient/types";
 import styled from "styled-components";
 
 import createJiraClient from "../JiraClient/createJiraClient";
@@ -94,6 +90,7 @@ const Body = ({
 						onChange={(value) =>
 							changeFormValue({ issuetypeId: value as string })
 						}
+						placeholder="Select an issue type"
 						options={issueOptions}
 						disabled={!projectId}
 					/>
@@ -107,7 +104,7 @@ const Body = ({
 						onChange={(event) =>
 							changeFormValue({ summary: event.target.value })
 						}
-						placeholder="Ticket title"
+						placeholder="Ticket summary"
 						disabled={!projectId || !issuetypeId}
 					/>
 				</Typography.Text>
@@ -133,15 +130,24 @@ const Footer = ({
 	onClose,
 	onSubmit,
 	loading,
+	formState,
 }: {
 	onClose: () => void;
 	onSubmit: () => void;
 	loading: boolean;
+	formState: IssueCreationFields;
 }) => {
+	const { projectId, issuetypeId, summary } = formState;
+
 	return (
 		<div>
 			<Button variant="text" text="Cancel" onClick={onClose} />
-			<Button text="Create" onClick={onSubmit} loading={loading} />
+			<Button
+				text="Create"
+				onClick={onSubmit}
+				loading={loading}
+				disabled={!projectId || !issuetypeId || !summary}
+			/>
 		</div>
 	);
 };
@@ -172,13 +178,10 @@ export default ({
 
 	const onSubmit = React.useCallback(() => {
 		setSubmitting(true);
-		client
-			.createIssue(formState)
-			.then((response) => client.getIssue(response.key))
-			.then(() => {
-				closeModal();
-				setSubmitting(false);
-			});
+		client.createIssue(formState).then(() => {
+			closeModal();
+			setSubmitting(false);
+		});
 	}, [formState]);
 
 	React.useEffect(() => {
@@ -202,7 +205,12 @@ export default ({
 				/>
 			}
 			footer={
-				<Footer loading={submitting} onClose={closeModal} onSubmit={onSubmit} />
+				<Footer
+					loading={submitting}
+					onClose={closeModal}
+					onSubmit={onSubmit}
+					formState={formState}
+				/>
 			}
 			variant="basic"
 			size="small"
