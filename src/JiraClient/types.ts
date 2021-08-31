@@ -40,3 +40,26 @@ export interface Issue {
 }
 
 export type IssueTypeName = "Task" | "Story" | "Bug";
+
+export type IssueStatusName = "Done" | "To Do" | "In Progress";
+
+export interface IssueCreationFields {
+  projectId: string;
+  issuetypeId?: string;
+  summary: string;
+  description: string;
+}
+
+export interface IssueType {
+  self: string;
+  id: string;
+  name: string;
+  iconUrl: string;
+}
+export interface Project {
+  self: string;
+  id: string;
+  key: string;
+  name: string;
+  issuetypes: IssueType[];
+}
