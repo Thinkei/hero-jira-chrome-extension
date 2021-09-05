@@ -8,7 +8,6 @@ export default () => {
   const [response, setResponse] = React.useState<Response | undefined>();
   const [loading, setLoading] = React.useState<boolean>(true);
   const [openModal, setOpenModal] = React.useState<boolean>(false);
-  console.log(response);
 
   React.useEffect(() => {
     sendGithubMessage((response) => {
@@ -49,7 +48,11 @@ export default () => {
               text="Can't extract Jira ID from pull request title"
             />
             {openModal && (
-              <CreatingJiraCardModal closeModal={() => setOpenModal(false)} />
+              <CreatingJiraCardModal
+                closeModal={() => setOpenModal(false)}
+                githubIssue={response}
+                setResponse={setResponse}
+              />
             )}
           </>
         );

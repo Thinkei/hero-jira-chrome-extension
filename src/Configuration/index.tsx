@@ -1,21 +1,51 @@
 import React from "react";
 import { Input, Typography, Button, Icon } from "hero-design";
-import Storage, { JiraConfig } from "../Storage";
+import Storage, {
+  JiraConfig,
+  GithubConfig,
+  AuthConfiguration,
+} from "../Storage";
 import { useTheme } from "styled-components";
 import JiraConfigContext from "../context/JiraConfigContext";
+import GithubConfigContext from "../context/GithubConfigContext";
+
+const useConfigFieldsWithContext = <T,>(
+  context: React.Context<T extends JiraConfig | GithubConfig ? T : never>
+) => {
+  const contextValue = React.useContext(context);
+  const [fields, setFields] = React.useState<T>(contextValue);
+  const [tokenShown, setTokenShown] = React.useState(false);
+  const changeFields = React.useCallback(
+    (props: Partial<T>) => setFields((conf) => ({ ...conf, ...props })),
+    []
+  );
+  React.useEffect(() => {
+    setFields(contextValue);
+  }, [contextValue]);
+  return { fields, changeFields, tokenShown, setTokenShown };
+};
 
 export default ({
   onSaveConfig,
 }: {
-  onSaveConfig: (c: JiraConfig) => void;
+  onSaveConfig: (conf: AuthConfiguration) => void;
 }) => {
-  const config = React.useContext(JiraConfigContext);
-  const [host, setHost] = React.useState<string>(config.host);
-  const [token, setToken] = React.useState<string>(config.token);
-  const [email, setEmail] = React.useState<string>(config.email);
+  const {
+    fields: jiraConfigFields,
+    changeFields: changeJiraConfigFields,
+    tokenShown: jiraTokenShown,
+    setTokenShown: setJiraTokenShown,
+  } = useConfigFieldsWithContext<JiraConfig>(JiraConfigContext);
+
+  const {
+    fields: githubConfigFields,
+    changeFields: changeGithubConfigFields,
+    tokenShown: githubTokenShown,
+    setTokenShown: setGithubTokenShown,
+  } = useConfigFieldsWithContext<GithubConfig>(GithubConfigContext);
+
   const [dirty, setDirty] = React.useState<boolean>(false);
-  const [showedToken, setShowedToken] = React.useState<boolean>(false);
-  const [showedSuccess, setShowedSuccess] = React.useState<boolean>(false);
+  const [showedSuccess, setShowedSuccess] = React.useState(false);
 
   React.useEffect(() => {
     let timerId: NodeJS.Timeout;
@@ -27,23 +57,17 @@ export default ({
     };
   }, [showedSuccess]);
 
-  const saveToStorage = React.useCallback(
-    ({ host, token, email }: JiraConfig) => {
-      Storage.set(
-        {
-          host,
-          token,
-          email,
-        },
-        () => {
-          setDirty(false);
-          setShowedSuccess(true);
-        }
-      );
-      onSaveConfig({ host, token, email });
-    },
-    []
-  );
+  const saveToStorage = React.useCallback(() => {
+    const authConfig: AuthConfiguration = {
+      jiraConfig: jiraConfigFields,
+      githubConfig: githubConfigFields,
+    };
+    Storage.set(authConfig, () => {
+      setDirty(false);
+      setShowedSuccess(true);
+    });
+    onSaveConfig(authConfig);
+  }, [jiraConfigFields, githubConfigFields]);
 
   const theme = useTheme();
 
@@ -53,19 +77,35 @@ export default ({
   };
 
   return (
-    <form onSubmit={() => saveToStorage({ host, token, email })}>
+    <form onSubmit={saveToStorage}>
       <Typography.Text
         tagName="label"
         fontWeight="semi-bold"
         style={fieldSpacing}
       >
-        Host
+        Jira host
         <Input
           required
-          value={host}
+          value={jiraConfigFields.host}
           placeholder="Jira host..."
           onChange={(e) => {
-            setHost(e.target.value);
+            changeJiraConfigFields({ host: e.target.value });
+            setDirty(true);
+          }}
+        />
+      </Typography.Text>
+      <Typography.Text
+        tagName="label"
+        fontWeight="semi-bold"
+        style={fieldSpacing}
+      >
+        Jira email
+        <Input
+          required
+          value={jiraConfigFields.email}
+          placeholder="Your Jira email..."
+          onChange={(e) => {
+            changeJiraConfigFields({ email: e.target.value });
             setDirty(true);
           }}
         />
@@ -78,17 +118,17 @@ export default ({
         Jira token
         <Input
           required
-          value={token}
+          value={jiraConfigFields.token}
           placeholder="Jira secret token..."
           onChange={(e) => {
-            setToken(e.target.value);
+            changeJiraConfigFields({ token: e.target.value });
             setDirty(true);
           }}
-          type={showedToken ? "text" : "password"}
+          type={jiraTokenShown ? "text" : "password"}
           suffix={
             <Button.Icon
-              icon={showedToken ? "eye-invisible-outlined" : "eye-outlined"}
-              onClick={() => setShowedToken((v) => !v)}
+              icon={jiraTokenShown ? "eye-invisible-outlined" : "eye-outlined"}
+              onClick={() => setJiraTokenShown((v) => !v)}
             />
           }
         />
@@ -98,15 +138,24 @@ export default ({
         fontWeight="semi-bold"
         style={fieldSpacing}
       >
-        Jira email
+        Github token
         <Input
           required
-          value={email}
-          placeholder="Your Jira email..."
+          value={githubConfigFields.token}
+          placeholder="Your github secret token"
           onChange={(e) => {
-            setEmail(e.target.value);
+            changeGithubConfigFields({ token: e.target.value });
             setDirty(true);
           }}
+          type={githubTokenShown ? "text" : "password"}
+          suffix={
+            <Button.Icon
+              icon={
+                githubTokenShown ? "eye-invisible-outlined" : "eye-outlined"
+              }
+              onClick={() => setGithubTokenShown((v) => !v)}
+            />
+          }
         />
       </Typography.Text>
       <div

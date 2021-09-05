@@ -1,8 +1,13 @@
-import React, { Dispatch, SetStateAction } from "react";
+import { useGithubApi } from "../GithubApi";
+
 import { Modal, Typography, Input, Select, Button, Spinner } from "hero-design";
-import useAxios from "axios-hooks";
+import React from "react";
 import styled from "styled-components";
-import { Issue, IssueCreationFields, Project } from "../JiraClient/types";
+import useAxios from "axios-hooks";
+
+import { IssueCreationFields, Project } from "../JiraClient/types";
+import { PullResponse, Response } from "../Messaging/GithubMessage";
+import { generatePullEndpoint } from "../GithubApi";
 
 type SelectOptions = { text: string; value: string }[];
 
@@ -24,7 +29,7 @@ const Body = ({
   loading,
 }: {
   formState: IssueCreationFields;
-  setFormState: Dispatch<SetStateAction<IssueCreationFields>>;
+  setFormState: React.Dispatch<React.SetStateAction<IssueCreationFields>>;
   projects: Project[];
   loading: boolean;
 }) => {
@@ -151,7 +156,15 @@ const Footer = ({
   );
 };
 
-export default ({ closeModal }: { closeModal: () => void }) => {
+export default ({
+  closeModal,
+  githubIssue,
+  setResponse,
+}: {
+  closeModal: () => void;
+  githubIssue: PullResponse;
+  setResponse: React.Dispatch<React.SetStateAction<Response | undefined>>;
+}) => {
   const [formState, setFormState] =
     React.useState<IssueCreationFields>(initialFormState);
 
@@ -170,15 +183,23 @@ export default ({ closeModal }: { closeModal: () => void }) => {
     projects: Array<Project>;
   }>("rest/api/2/issue/createmeta");
 
+  const { fetchData: fetchGithub, loading: updatingPR } = useGithubApi();
+
   React.useEffect(() => {
     if (createdIssue !== undefined) {
-      closeModal();
+      fetchGithub({
+        endpoint: generatePullEndpoint(githubIssue),
+        method: "PATCH",
+        body: { title: `[${createdIssue.key}] ${githubIssue.title}` },
+      }).then(() => {
+        setResponse({
+          ...githubIssue,
+          jiraKey: createdIssue.key,
+        } as PullResponse);
+        closeModal();
+      });
     }
   }, [createdIssue]);
-
-  // TODO:
-  // Callback to set jira card
-  // Inject jira card to PR title
 
   const onSubmit = React.useCallback(() => {
     submitIssue({
@@ -196,7 +217,7 @@ export default ({ closeModal }: { closeModal: () => void }) => {
   return (
     <Modal
       open
-      title={"Create Jira card"}
+      title="Create Jira card"
       body={
         <Body
           formState={formState}
@@ -207,7 +228,7 @@ export default ({ closeModal }: { closeModal: () => void }) => {
       }
       footer={
         <Footer
-          loading={submitting}
+          loading={submitting || updatingPR}
           onClose={closeModal}
           onSubmit={onSubmit}
           formState={formState}
