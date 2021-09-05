@@ -57,5 +57,8 @@ export interface Project {
   id: string;
   key: string;
   name: string;
+  avatarUrls: {
+    "48x48": string;
+  };
   issuetypes: IssueType[];
 }

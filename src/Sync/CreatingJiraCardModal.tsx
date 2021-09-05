@@ -2,7 +2,7 @@ import { useGithubApi } from "../GithubApi";
 
 import { Modal, Typography, Input, Select, Button, Spinner } from "hero-design";
 import React from "react";
-import styled from "styled-components";
+import styled, { useTheme } from "styled-components";
 import useAxios from "axios-hooks";
 
 import { IssueCreationFields, Project } from "../JiraClient/types";
@@ -10,6 +10,7 @@ import { PullResponse, Response } from "../Messaging/GithubMessage";
 import { generatePullEndpoint } from "../GithubApi";
 
 type SelectOptions = { text: string; value: string }[];
+type IconUrls = Record<string, string>;
 
 const initialFormState: IssueCreationFields = {
   projectId: "",
@@ -21,6 +22,25 @@ const initialFormState: IssueCreationFields = {
 const FieldWrapper = styled.div`
   margin-bottom: ${({ theme }) => theme.space.small}px;
 `;
+
+const OptionWithIcon = ({ icon, text }: { icon: string; text: string }) => {
+  const theme = useTheme();
+  return (
+    <div>
+      <img
+        src={icon}
+        style={{
+          height: 24,
+          width: 24,
+          marginRight: theme.space.small,
+          verticalAlign: "middle",
+          display: "inline-block",
+        }}
+      />
+      {text}
+    </div>
+  );
+};
 
 const Body = ({
   formState,
@@ -49,6 +69,15 @@ const Body = ({
     [projects]
   );
 
+  const projectAvatars: IconUrls = React.useMemo(
+    () =>
+      projects.reduce(
+        (acc, { id, avatarUrls }) => ({ ...acc, [id]: avatarUrls["48x48"] }),
+        {}
+      ),
+    [projects]
+  );
+
   const issueOptions: SelectOptions = React.useMemo(
     () =>
       selectedProject
@@ -57,6 +86,20 @@ const Body = ({
             value: id,
           }))
         : [],
+    [selectedProject]
+  );
+
+  const issueIcons: IconUrls = React.useMemo(
+    () =>
+      selectedProject
+        ? selectedProject.issuetypes.reduce(
+            (acc, { id, iconUrl }) => ({
+              ...acc,
+              [id]: iconUrl,
+            }),
+            {}
+          )
+        : {},
     [selectedProject]
   );
 
@@ -83,6 +126,12 @@ const Body = ({
             query={query}
             onQueryChange={setQuery}
             loading={loading}
+            optionRenderer={({ option }) => (
+              <OptionWithIcon
+                icon={projectAvatars[option.value]}
+                text={option.text}
+              />
+            )}
           />
         </Typography.Text>
       </FieldWrapper>
@@ -97,6 +146,12 @@ const Body = ({
             placeholder="Select an issue type"
             options={issueOptions}
             disabled={!projectId}
+            optionRenderer={({ option }) => (
+              <OptionWithIcon
+                icon={issueIcons[option.value]}
+                text={option.text}
+              />
+            )}
           />
         </Typography.Text>
       </FieldWrapper>
