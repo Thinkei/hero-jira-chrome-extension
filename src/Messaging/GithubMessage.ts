@@ -3,6 +3,7 @@ export interface PullResponse {
   organisation: string;
   project: string;
   pullId: string;
+  title: string;
   jiraKey?: string;
 }
 
@@ -58,6 +59,7 @@ const githubMessageListener = (
             organisation,
             project,
             pullId,
+            title: pullTitle,
             jiraKey: jiraKey.replace("[", "").replace("]", ""),
           });
           return;
@@ -66,6 +68,7 @@ const githubMessageListener = (
             __tag: "PullResponse",
             organisation,
             project,
+            title: pullTitle,
             pullId,
           });
           return;

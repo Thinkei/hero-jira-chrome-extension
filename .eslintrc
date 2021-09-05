@@ -1,0 +1,6 @@
+{
+  "parser": "@typescript-eslint/parser",
+  "rules": {
+    "import/no-anonymous-default-export": 0
+  }
+}
