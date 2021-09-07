@@ -20,6 +20,8 @@ export interface Transition {
 }
 
 export interface Issue {
+  id: string;
+  key: string;
   fields: {
     assignee: null | Person;
     creator: Person;
@@ -36,7 +38,6 @@ export interface Issue {
       name: string;
     };
   };
-  key: string;
 }
 
 export interface IssueCreationFields {
@@ -44,6 +45,7 @@ export interface IssueCreationFields {
   issuetypeId?: string;
   summary: string;
   description: string;
+  parentId?: string;
 }
 
 export interface IssueType {
@@ -51,6 +53,7 @@ export interface IssueType {
   id: string;
   name: string;
   iconUrl: string;
+  subtask: boolean;
 }
 export interface Project {
   self: string;

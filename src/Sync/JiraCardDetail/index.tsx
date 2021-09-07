@@ -1,4 +1,4 @@
-import { Alert, Spinner, Table, Typography } from "hero-design";
+import { Alert, Spinner, Typography } from "hero-design";
 import React from "react";
 import useAxios from "axios-hooks";
 import { Button } from "hero-design";

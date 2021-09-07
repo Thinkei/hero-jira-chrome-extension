@@ -5,7 +5,12 @@ import React from "react";
 import styled, { useTheme } from "styled-components";
 import useAxios from "axios-hooks";
 
-import { IssueCreationFields, Project } from "../JiraClient/types";
+import {
+  IssueCreationFields,
+  Project,
+  IssueType,
+  Issue,
+} from "../JiraClient/types";
 import { PullResponse, Response } from "../Messaging/GithubMessage";
 import { generatePullEndpoint } from "../GithubApi";
 
@@ -53,11 +58,18 @@ const Body = ({
   projects: Project[];
   loading: boolean;
 }) => {
-  const { projectId, summary, description, issuetypeId } = formState;
+  const { projectId, summary, description, issuetypeId, parentId } = formState;
 
   const selectedProject: Project | null = React.useMemo(
     () => projects.find(({ id }) => id === projectId) ?? null,
     [projects, projectId]
+  );
+
+  const selectedIssueType: IssueType | null = React.useMemo(
+    () =>
+      selectedProject &&
+      (selectedProject.issuetypes.find(({ id }) => id === issuetypeId) ?? null),
+    [selectedProject, issuetypeId]
   );
 
   const projectOptions: SelectOptions = React.useMemo(
@@ -78,7 +90,7 @@ const Body = ({
     [projects]
   );
 
-  const issueOptions: SelectOptions = React.useMemo(
+  const issueTypeOptions: SelectOptions = React.useMemo(
     () =>
       selectedProject
         ? selectedProject.issuetypes.map(({ id, name }) => ({
@@ -110,6 +122,44 @@ const Body = ({
   );
 
   const [query, setQuery] = React.useState<string | undefined>("");
+
+  const [{ data: issueData, loading: loadingIssues }, fetchIssues] = useAxios<{
+    issues: Array<Issue>;
+  }>(
+    {
+      url: `rest/api/2/search?jql=project=${
+        selectedProject ? selectedProject.key : ""
+      }&fields=id,key&maxResults=500`,
+      method: "GET",
+    },
+    { manual: true }
+  );
+
+  const [parentIssues, setParentIssues] = React.useState<Issue[]>([]);
+
+  const parentIssueOptions: SelectOptions = React.useMemo(
+    () =>
+      parentIssues.map(({ id, key }) => ({
+        text: key,
+        value: id,
+      })),
+    [parentIssues]
+  );
+
+  React.useEffect(() => {
+    if (issueData) setParentIssues(issueData.issues);
+  }, [issueData]);
+
+  React.useEffect(() => {
+    if (projectId) setParentIssues([]);
+  }, [projectId]);
+
+  React.useEffect(() => {
+    if (!selectedProject || !selectedIssueType) return;
+    if (selectedIssueType.subtask) {
+      fetchIssues();
+    }
+  }, [selectedIssueType, selectedProject]);
 
   return (
     <Spinner loading={loading}>
@@ -144,7 +194,7 @@ const Body = ({
               changeFormValue({ issuetypeId: value as string })
             }
             placeholder="Select an issue type"
-            options={issueOptions}
+            options={issueTypeOptions}
             disabled={!projectId}
             optionRenderer={({ option }) => (
               <OptionWithIcon
@@ -155,6 +205,22 @@ const Body = ({
           />
         </Typography.Text>
       </FieldWrapper>
+      {selectedIssueType && selectedIssueType.subtask && (
+        <FieldWrapper>
+          <Typography.Text tagName="label" fontWeight="semi-bold">
+            Parent issue
+            <Select
+              value={parentId}
+              onChange={(value) =>
+                changeFormValue({ parentId: value as string })
+              }
+              loading={loadingIssues}
+              placeholder="Select a parent issue for subtask"
+              options={parentIssueOptions}
+            />
+          </Typography.Text>
+        </FieldWrapper>
+      )}
       <FieldWrapper>
         <Typography.Text tagName="label" fontWeight="semi-bold">
           Title
@@ -264,6 +330,7 @@ export default ({
           description: formState.description,
           project: { id: formState.projectId },
           issuetype: { id: formState.issuetypeId },
+          parent: formState.parentId && { id: formState.parentId },
         },
       },
     });

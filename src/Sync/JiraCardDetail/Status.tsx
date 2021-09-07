@@ -1,4 +1,4 @@
-import { Tag, Select } from "hero-design";
+import { Select } from "hero-design";
 import React from "react";
 import useAxios from "axios-hooks";
 
