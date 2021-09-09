@@ -87,7 +87,7 @@ export default ({
         <Input
           required
           value={jiraConfigFields.host}
-          placeholder="Jira host..."
+          placeholder="https://employmenthero.atlassian.net"
           onChange={(e) => {
             changeJiraConfigFields({ host: e.target.value });
             setDirty(true);
@@ -103,7 +103,7 @@ export default ({
         <Input
           required
           value={jiraConfigFields.email}
-          placeholder="Your Jira email..."
+          placeholder="boss@employmenthero.com"
           onChange={(e) => {
             changeJiraConfigFields({ email: e.target.value });
             setDirty(true);
