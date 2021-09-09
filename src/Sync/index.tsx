@@ -31,6 +31,7 @@ export default () => {
     case "ErrorResponse":
       return <Alert intent="warning" content={response.errorMessage} />;
     case "PullResponse":
+    case "IssueResponse":
       const jiraKey = response.jiraKey;
       if (jiraKey === undefined) {
         return (
@@ -45,7 +46,8 @@ export default () => {
                   onClick={() => setOpenModal(true)}
                 />
               }
-              text="Can't extract Jira ID from pull request title"
+              style={{ textAlign: "center" }}
+              text="Can't extract a Jira ID from this pull/issue"
             />
             {openModal && (
               <CreatingJiraCardModal
@@ -58,7 +60,5 @@ export default () => {
         );
       }
       return <JiraCardDetail jiraKey={jiraKey} />;
-    case "IssueResponse":
-      return <div>{response.title}</div>;
   }
 };

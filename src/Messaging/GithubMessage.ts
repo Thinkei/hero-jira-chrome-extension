@@ -2,15 +2,18 @@ export interface PullResponse {
   readonly __tag: "PullResponse";
   organisation: string;
   project: string;
-  pullId: string;
+  id: string;
   title: string;
   jiraKey?: string;
 }
 
 export interface IssueResponse {
   readonly __tag: "IssueResponse";
+  organisation: string;
+  project: string;
+  id: string;
   title: string;
-  body: string;
+  jiraKey?: string;
 }
 
 export interface ErrorResponse {
@@ -31,9 +34,35 @@ const sendGithubMessage = (onResponse: (response: Response) => void) => {
   });
 };
 
-const githubPullRegex =
-  /https:\/\/*.github.com\/([\w'-]+)\/([\w'-]+)\/pull\/(\d*)/;
+const githubIssueRegex =
+  /https:\/\/*.github.com\/([\w'-]+)\/([\w'-]+)\/(?:pull|issues)\/(\d*)/;
 const jiraKeyRegex = /\[\w*-\d*\]/;
+
+const generateResponse: (
+  tag: PullResponse["__tag"] | IssueResponse["__tag"],
+  matches: RegExpMatchArray
+) => Response = (tag, matches) => {
+  const title = document.querySelector(".js-issue-title")?.textContent;
+
+  if (title == null)
+    return {
+      __tag: "ErrorResponse",
+      errorMessage: "PR/Issue title not found",
+    } as ErrorResponse;
+
+  const matchJiraKey = title.match(jiraKeyRegex);
+
+  const response: PullResponse | IssueResponse = {
+    __tag: tag,
+    organisation: matches[1],
+    project: matches[2],
+    id: matches[3],
+    jiraKey: matchJiraKey ? matchJiraKey[0].replace(/[\[\]]/g, "") : undefined,
+    title,
+  };
+
+  return response;
+};
 
 const githubMessageListener = (
   msg: string,
@@ -42,43 +71,17 @@ const githubMessageListener = (
 ) => {
   if (msg === GithubMessage) {
     const path = window.location.href;
-    const matchGithubPull = path.match(githubPullRegex);
-    if (matchGithubPull !== null) {
-      const organisation = matchGithubPull[1];
-      const project = matchGithubPull[2];
-      const pullId = matchGithubPull[3];
+    const issueMatches = path.match(githubIssueRegex);
 
-      const pullTitle = document.querySelector(".js-issue-title")?.textContent;
-
-      if (pullTitle !== undefined && pullTitle !== null) {
-        const matchJiraKey = pullTitle.match(jiraKeyRegex);
-        if (matchJiraKey !== null && matchJiraKey !== undefined) {
-          const jiraKey = matchJiraKey[0];
-          sendResponse({
-            __tag: "PullResponse",
-            organisation,
-            project,
-            pullId,
-            title: pullTitle,
-            jiraKey: jiraKey.replace("[", "").replace("]", ""),
-          });
-          return;
-        } else {
-          sendResponse({
-            __tag: "PullResponse",
-            organisation,
-            project,
-            title: pullTitle,
-            pullId,
-          });
-          return;
-        }
+    if (issueMatches !== null) {
+      if (issueMatches[0].includes("/issues/")) {
+        sendResponse(generateResponse("IssueResponse", issueMatches));
+        return;
       }
-      sendResponse({
-        __tag: "ErrorResponse",
-        errorMessage: "Pull title not found",
-      });
-      return;
+      if (issueMatches[0].includes("/pull/")) {
+        sendResponse(generateResponse("PullResponse", issueMatches));
+        return;
+      }
     }
 
     sendResponse({
@@ -87,11 +90,11 @@ const githubMessageListener = (
     });
     return;
   }
+
   sendResponse({
     __tag: "ErrorResponse",
     errorMessage: `Unhandle message ${msg}`,
   });
-  return;
 };
 
 export { sendGithubMessage, githubMessageListener };

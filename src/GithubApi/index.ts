@@ -1,19 +1,23 @@
 import React from "react";
 
-import { PullResponse } from "../Messaging/GithubMessage";
+import { GithubConfig } from "../Storage";
+import { PullResponse, IssueResponse } from "../Messaging/GithubMessage";
 import GithubConfigContext from "../context/GithubConfigContext";
 
 type FetchMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
 export const generatePullEndpoint = ({
+  __tag,
   organisation,
   project,
-  pullId,
-}: PullResponse) =>
-  `https://api.github.com/repos/${organisation}/${project}/pulls/${pullId}`;
+  id,
+}: PullResponse | IssueResponse) =>
+  `https://api.github.com/repos/${organisation}/${project}/${
+    __tag === "IssueResponse" ? "issues" : "pulls"
+  }/${id}`;
 
 export const useGithubApi = () => {
-  const { token } = React.useContext(GithubConfigContext);
+  const { token } = React.useContext<GithubConfig>(GithubConfigContext);
   const [loading, setLoading] = React.useState(false);
 
   const fetchData = React.useCallback(
@@ -24,7 +28,7 @@ export const useGithubApi = () => {
     }: {
       endpoint: string;
       method?: FetchMethod;
-      body: string | object;
+      body?: string | object;
     }) => {
       setLoading(true);
       await fetch(endpoint, {

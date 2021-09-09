@@ -34,8 +34,8 @@ export default ({ jiraKey }: { jiraKey: string }) => {
             href={`${jiraConfig.host}/browse/${jiraKey}`}
           />
         </li>
-        <li>Title: {issue.fields.description}</li>
-        <li>Summary: {issue.fields.summary}</li>
+        <li>Title: {issue.fields.summary}</li>
+        <li>Summary: {issue.fields.description}</li>
         <li>
           Status:
           <Status

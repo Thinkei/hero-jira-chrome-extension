@@ -1,5 +1,3 @@
-import { useGithubApi } from "../GithubApi";
-
 import { Modal, Typography, Input, Select, Button, Spinner } from "hero-design";
 import React from "react";
 import styled, { useTheme } from "styled-components";
@@ -11,8 +9,12 @@ import {
   IssueType,
   Issue,
 } from "../JiraClient/types";
-import { PullResponse, Response } from "../Messaging/GithubMessage";
-import { generatePullEndpoint } from "../GithubApi";
+import {
+  PullResponse,
+  IssueResponse,
+  Response,
+} from "../Messaging/GithubMessage";
+import { generatePullEndpoint, useGithubApi } from "../GithubApi";
 
 type SelectOptions = { text: string; value: string }[];
 type IconUrls = Record<string, string>;
@@ -283,7 +285,7 @@ export default ({
   setResponse,
 }: {
   closeModal: () => void;
-  githubIssue: PullResponse;
+  githubIssue: PullResponse | IssueResponse;
   setResponse: React.Dispatch<React.SetStateAction<Response | undefined>>;
 }) => {
   const [formState, setFormState] =
