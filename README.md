@@ -9,6 +9,10 @@ https://user-images.githubusercontent.com/3622010/131429006-e9306f73-2c63-47b0-9
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
+## Install from Chrome Webstore
+
+https://chrome.google.com/webstore/detail/hero-jira/pdpegfiiiddlbdjajfefieoillffngjh
+
 ## Available Scripts
 
 In the project directory, you can run:
