@@ -123,7 +123,12 @@ const Body = ({
     [setFormState]
   );
 
-  const [query, setQuery] = React.useState<string | undefined>("");
+  const [projectQuery, setProjectQuery] = React.useState<string | undefined>(
+    ""
+  );
+  const [parentTaskQuery, setParentTaskQuery] = React.useState<
+    string | undefined
+  >("");
 
   const [{ data: issueData, loading: loadingIssues }, fetchIssues] = useAxios<{
     issues: Array<Issue>;
@@ -175,8 +180,8 @@ const Body = ({
               changeFormValue({ projectId: value ? String(value) : undefined })
             }
             placeholder="Select a project"
-            query={query}
-            onQueryChange={setQuery}
+            query={projectQuery}
+            onQueryChange={setProjectQuery}
             loading={loading}
             optionRenderer={({ option }) => (
               <OptionWithIcon
@@ -218,6 +223,8 @@ const Body = ({
               }
               loading={loadingIssues}
               placeholder="Select a parent issue for subtask"
+              query={parentTaskQuery}
+              onQueryChange={setParentTaskQuery}
               options={parentIssueOptions}
             />
           </Typography.Text>
