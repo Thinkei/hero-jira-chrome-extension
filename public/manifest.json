@@ -1,8 +1,8 @@
 {
   "manifest_version": 2,
-  "version": "0.0.2",
-  "short_name": "Hero Jira",
-  "name": "Hero Jira",
+  "version": "0.0.3",
+  "short_name": "Hero Jira Dev",
+  "name": "Hero Jira Dev",
   "description": "Connect Github to Jira",
   "browser_action": {
     "default_title": "HeroJira",
