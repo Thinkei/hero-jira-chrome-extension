@@ -1,13 +1,14 @@
+import { Button, Icon, Input, Tooltip, Typography } from "hero-design";
+import { useTheme } from "styled-components";
 import React from "react";
-import { Input, Typography, Button, Icon } from "hero-design";
+
+import GithubConfigContext from "../context/GithubConfigContext";
+import JiraConfigContext from "../context/JiraConfigContext";
 import Storage, {
   JiraConfig,
   GithubConfig,
   AuthConfiguration,
 } from "../Storage";
-import { useTheme } from "styled-components";
-import JiraConfigContext from "../context/JiraConfigContext";
-import GithubConfigContext from "../context/GithubConfigContext";
 
 const useConfigFieldsWithContext = <T,>(
   context: React.Context<T extends JiraConfig | GithubConfig ? T : never>
@@ -116,6 +117,29 @@ export default ({
         style={fieldSpacing}
       >
         Jira token
+        <Tooltip
+          interactive
+          content={
+            <div>
+              Your personal
+              <Button.Link
+                style={{ marginLeft: theme.space.xsmall }}
+                text="Jira token"
+                target="_blank"
+                href="https://id.atlassian.com/manage-profile/security/api-tokens"
+              />
+            </div>
+          }
+          target={
+            <Icon
+              icon="circle-info"
+              style={{
+                marginLeft: theme.space.xsmall,
+                verticalAlign: "middle",
+              }}
+            />
+          }
+        />
         <Input
           required
           value={jiraConfigFields.token}
@@ -139,6 +163,29 @@ export default ({
         style={fieldSpacing}
       >
         Github token
+        <Tooltip
+          interactive
+          content={
+            <div>
+              Your personal
+              <Button.Link
+                style={{ marginLeft: theme.space.xsmall }}
+                text="Github token"
+                target="_blank"
+                href="https://github.com/settings/tokens"
+              />
+            </div>
+          }
+          target={
+            <Icon
+              icon="circle-info"
+              style={{
+                marginLeft: theme.space.xsmall,
+                verticalAlign: "middle",
+              }}
+            />
+          }
+        />
         <Input
           required
           value={githubConfigFields.token}

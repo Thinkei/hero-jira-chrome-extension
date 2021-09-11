@@ -134,7 +134,7 @@ export default ({
             <div>
               Query an issue with
               <Button.Link
-                style={{ marginLeft: theme.space.small }}
+                style={{ marginLeft: theme.space.xsmall }}
                 text="Jira JQL syntax"
                 target="_blank"
                 href="https://support.atlassian.com/jira-service-management-cloud/docs/advanced-search-reference-jql-fields/"
@@ -144,7 +144,10 @@ export default ({
           target={
             <Icon
               icon="circle-info"
-              style={{ marginLeft: theme.space.small, verticalAlign: "middle" }}
+              style={{
+                marginLeft: theme.space.xsmall,
+                verticalAlign: "middle",
+              }}
             />
           }
         />
