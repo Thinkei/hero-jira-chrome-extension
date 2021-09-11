@@ -1,4 +1,12 @@
-import { Modal, Typography, Input, Select, Button, Spinner } from "hero-design";
+import {
+  Alert,
+  Button,
+  Input,
+  Modal,
+  Select,
+  Spinner,
+  Typography,
+} from "hero-design";
 import React from "react";
 import styled, { useTheme } from "styled-components";
 import useAxios from "axios-hooks";
@@ -16,7 +24,7 @@ import {
 } from "../Messaging/GithubMessage";
 import { generatePullEndpoint, useGithubApi } from "../GithubApi";
 
-type SelectOptions = { text: string; value: string }[];
+type SelectOptions = React.ComponentProps<typeof Select>["options"];
 type IconUrls = Record<string, string>;
 
 const initialFormState: IssueCreationFields = {
@@ -54,12 +62,15 @@ const Body = ({
   setFormState,
   projects,
   loading,
+  errors,
 }: {
   formState: IssueCreationFields;
   setFormState: React.Dispatch<React.SetStateAction<IssueCreationFields>>;
   projects: Project[];
   loading: boolean;
+  errors: string[];
 }) => {
+  const theme = useTheme();
   const { projectId, summary, description, issuetypeId, parentId } = formState;
 
   const selectedProject: Project | null = React.useMemo(
@@ -134,9 +145,10 @@ const Body = ({
     issues: Array<Issue>;
   }>(
     {
+      // @TODO: Paginate this api and async search
       url: `rest/api/2/search?jql=project=${
         selectedProject ? selectedProject.key : ""
-      }&fields=id,key&maxResults=500`,
+      }&fields=summary&maxResults=1000`,
       method: "GET",
     },
     { manual: true }
@@ -146,8 +158,8 @@ const Body = ({
 
   const parentIssueOptions: SelectOptions = React.useMemo(
     () =>
-      parentIssues.map(({ id, key }) => ({
-        text: key,
+      parentIssues.map(({ id, key, fields }) => ({
+        text: `[${key}] ${fields.summary}`,
         value: id,
       })),
     [parentIssues]
@@ -170,6 +182,14 @@ const Body = ({
 
   return (
     <Spinner loading={loading}>
+      {errors.length > 0 && (
+        <Alert
+          content={errors.join("\n")}
+          variant="outlined"
+          intent="error"
+          style={{ marginBottom: theme.space.small }}
+        />
+      )}
       <FieldWrapper>
         <Typography.Text tagName="label" fontWeight="semi-bold">
           Project
@@ -298,16 +318,29 @@ export default ({
   const [formState, setFormState] =
     React.useState<IssueCreationFields>(initialFormState);
 
-  const [{ data: createdIssue, loading: submitting }, submitIssue] = useAxios<{
-    id: string;
-    key: string;
-  }>(
+  const [
+    { data: createdIssue, loading: submitting, error: submitIssueError },
+    submitIssue,
+  ] = useAxios<
+    {
+      id: string;
+      key: string;
+    },
+    { errors: { [key: string]: string } }
+  >(
     {
       url: `/rest/api/2/issue`,
       method: "POST",
     },
     { manual: true }
   );
+
+  const [errors, setErrors] = React.useState<string[]>([]);
+  React.useEffect(() => {
+    if (submitIssueError != null) {
+      setErrors(Object.values(submitIssueError.response?.data.errors ?? {}));
+    }
+  }, [submitIssueError]);
 
   const [{ data: projectsData, loading: loadingProjects }] = useAxios<{
     projects: Array<Project>;
@@ -355,6 +388,7 @@ export default ({
           setFormState={setFormState}
           projects={projectsData?.projects || []}
           loading={loadingProjects}
+          errors={errors}
         />
       }
       footer={

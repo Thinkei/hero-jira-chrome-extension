@@ -35,7 +35,7 @@ const sendGithubMessage = (onResponse: (response: Response) => void) => {
 };
 
 const githubIssueRegex =
-  /https:\/\/*.github.com\/([\w'-]+)\/([\w'-]+)\/(?:pull|issues)\/(\d*)/;
+  /https:\/\/*.github.com\/([\w'.-]+)\/([\w'.-]+)\/(?:pull|issues)\/(\d*)/;
 const jiraKeyRegex = /\[\w*-\d*\]/;
 
 const generateResponse: (
