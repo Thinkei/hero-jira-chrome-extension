@@ -1,19 +1,22 @@
-import { Alert, Spinner, Typography } from "hero-design";
+import { Alert, Button, Spinner, Tooltip, Typography } from "hero-design";
+import { useTheme } from "styled-components";
 import React from "react";
 import useAxios from "axios-hooks";
-import { Button } from "hero-design";
-import { useTheme } from "styled-components";
 
 import { Issue } from "../../JiraClient/types";
-import Status from "./Status";
 import JiraConfigContext from "../../context/JiraConfigContext";
+import Status from "./Status";
 
 export default ({ jiraKey }: { jiraKey: string }) => {
   const theme = useTheme();
   const [{ data: issue, loading, error }] = useAxios<Issue>(
     `/rest/api/2/issue/${jiraKey}`
   );
+
   const jiraConfig = React.useContext(JiraConfigContext);
+  const jiraLink = `${jiraConfig.host}/browse/${jiraKey}`;
+
+  const [linkCopied, setLinkCopied] = React.useState(false);
 
   if (loading === true) return <Spinner />;
 
@@ -35,11 +38,26 @@ export default ({ jiraKey }: { jiraKey: string }) => {
           justifyContent: "space-between",
         }}
       >
-        <Button.Link
-          target="_blank"
-          text={jiraKey}
-          href={`${jiraConfig.host}/browse/${jiraKey}`}
-        />
+        <div>
+          <Tooltip
+            content={linkCopied ? "Copy! :)" : "Copy?"}
+            target={
+              <Button.Icon
+                icon="link-2"
+                intent={linkCopied ? "subdued-text" : "primary"}
+                style={{
+                  marginRight: theme.space.small,
+                  verticalAlign: "middle",
+                }}
+                onClick={() => {
+                  navigator.clipboard.writeText(jiraLink);
+                  setLinkCopied(true);
+                }}
+              />
+            }
+          />
+          <Button.Link target="_blank" text={jiraKey} href={jiraLink} />
+        </div>
         <Typography.Text tagName="div">
           {"Status: "}
           <Status
