@@ -17,11 +17,7 @@ import {
   IssueType,
   Issue,
 } from "../JiraClient/types";
-import {
-  PullResponse,
-  IssueResponse,
-  Response,
-} from "../Messaging/GithubMessage";
+import { GithubIssueResponse } from "../Messaging/GithubMessage";
 import { generatePullEndpoint, useGithubApi } from "../GithubApi";
 
 type SelectOptions = React.ComponentProps<typeof Select>["options"];
@@ -105,26 +101,22 @@ const Body = ({
 
   const issueTypeOptions: SelectOptions = React.useMemo(
     () =>
-      selectedProject
-        ? selectedProject.issuetypes.map(({ id, name }) => ({
-            text: name,
-            value: id,
-          }))
-        : [],
+      selectedProject?.issuetypes.map(({ id, name }) => ({
+        text: name,
+        value: id,
+      })) ?? [],
     [selectedProject]
   );
 
   const issueIcons: IconUrls = React.useMemo(
     () =>
-      selectedProject
-        ? selectedProject.issuetypes.reduce(
-            (acc, { id, iconUrl }) => ({
-              ...acc,
-              [id]: iconUrl,
-            }),
-            {}
-          )
-        : {},
+      selectedProject?.issuetypes.reduce(
+        (acc, { id, iconUrl }) => ({
+          ...acc,
+          [id]: iconUrl,
+        }),
+        {}
+      ) ?? {},
     [selectedProject]
   );
 
@@ -148,7 +140,7 @@ const Body = ({
       // @TODO: Paginate this api and async search
       url: `rest/api/2/search?jql=project=${
         selectedProject ? selectedProject.key : ""
-      }&fields=summary&maxResults=1000`,
+      } AND issueType!=Subtask&fields=summary,imgUrl&maxResults=1000`,
       method: "GET",
     },
     { manual: true }
@@ -212,26 +204,28 @@ const Body = ({
           />
         </Typography.Text>
       </FieldWrapper>
-      <FieldWrapper>
-        <Typography.Text tagName="label" fontWeight="semi-bold">
-          Issue type
-          <Select
-            value={issuetypeId}
-            onChange={(value) =>
-              changeFormValue({ issuetypeId: value as string })
-            }
-            placeholder="Select an issue type"
-            options={issueTypeOptions}
-            disabled={!projectId}
-            optionRenderer={({ option }) => (
-              <OptionWithIcon
-                icon={issueIcons[option.value]}
-                text={option.text}
-              />
-            )}
-          />
-        </Typography.Text>
-      </FieldWrapper>
+      {projectId && (
+        <FieldWrapper>
+          <Typography.Text tagName="label" fontWeight="semi-bold">
+            Issue type
+            <Select
+              value={issuetypeId}
+              onChange={(value) =>
+                changeFormValue({ issuetypeId: String(value) })
+              }
+              placeholder="Select an issue type"
+              options={issueTypeOptions}
+              disabled={!projectId}
+              optionRenderer={({ option }) => (
+                <OptionWithIcon
+                  icon={issueIcons[option.value]}
+                  text={option.text}
+                />
+              )}
+            />
+          </Typography.Text>
+        </FieldWrapper>
+      )}
       {selectedIssueType && selectedIssueType.subtask && (
         <FieldWrapper>
           <Typography.Text tagName="label" fontWeight="semi-bold">
@@ -250,32 +244,36 @@ const Body = ({
           </Typography.Text>
         </FieldWrapper>
       )}
-      <FieldWrapper>
-        <Typography.Text tagName="label" fontWeight="semi-bold">
-          Title
-          <Input
-            value={summary}
-            onChange={(event) =>
-              changeFormValue({ summary: event.target.value })
-            }
-            placeholder="Ticket summary"
-            disabled={!projectId || !issuetypeId}
-          />
-        </Typography.Text>
-      </FieldWrapper>
-      <FieldWrapper>
-        <Typography.Text tagName="label" fontWeight="semi-bold">
-          Description
-          <Input.TextArea
-            value={description}
-            onChange={(event) =>
-              changeFormValue({ description: event.target.value })
-            }
-            placeholder="Ticket description"
-            disabled={!projectId || !issuetypeId}
-          />
-        </Typography.Text>
-      </FieldWrapper>
+      {projectId && issuetypeId && (
+        <>
+          <FieldWrapper>
+            <Typography.Text tagName="label" fontWeight="semi-bold">
+              Title
+              <Input
+                value={summary}
+                onChange={(event) =>
+                  changeFormValue({ summary: event.target.value })
+                }
+                placeholder="Ticket summary"
+                disabled={!projectId || !issuetypeId}
+              />
+            </Typography.Text>
+          </FieldWrapper>
+          <FieldWrapper>
+            <Typography.Text tagName="label" fontWeight="semi-bold">
+              Description
+              <Input.TextArea
+                value={description}
+                onChange={(event) =>
+                  changeFormValue({ description: event.target.value })
+                }
+                placeholder="Ticket description"
+                disabled={!projectId || !issuetypeId}
+              />
+            </Typography.Text>
+          </FieldWrapper>
+        </>
+      )}
     </Spinner>
   );
 };
@@ -312,8 +310,8 @@ export default ({
   setResponse,
 }: {
   closeModal: () => void;
-  githubIssue: PullResponse | IssueResponse;
-  setResponse: React.Dispatch<React.SetStateAction<Response | undefined>>;
+  githubIssue: GithubIssueResponse;
+  setResponse: (res: GithubIssueResponse) => void;
 }) => {
   const [formState, setFormState] =
     React.useState<IssueCreationFields>(initialFormState);
@@ -355,10 +353,7 @@ export default ({
         method: "PATCH",
         body: { title: `[${createdIssue.key}] ${githubIssue.title}` },
       }).then(() => {
-        setResponse({
-          ...githubIssue,
-          jiraKey: createdIssue.key,
-        } as PullResponse);
+        setResponse({ ...githubIssue, jiraKey: createdIssue.key });
         closeModal();
       });
     }
@@ -382,6 +377,7 @@ export default ({
     <Modal
       open
       title="Create Jira card"
+      style={{ textAlign: "left" }}
       body={
         <Body
           formState={formState}

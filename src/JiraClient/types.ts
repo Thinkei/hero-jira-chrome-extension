@@ -36,6 +36,7 @@ export interface Issue {
     status: Transition;
     issuetype: {
       name: string;
+      iconUrl: string;
     };
   };
 }

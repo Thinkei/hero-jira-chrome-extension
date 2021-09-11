@@ -1,7 +1,7 @@
 import React from "react";
 
 import { GithubConfig } from "../Storage";
-import { PullResponse, IssueResponse } from "../Messaging/GithubMessage";
+import { GithubIssueResponse } from "../Messaging/GithubMessage";
 import GithubConfigContext from "../context/GithubConfigContext";
 
 type FetchMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
@@ -11,7 +11,7 @@ export const generatePullEndpoint = ({
   organisation,
   project,
   id,
-}: PullResponse | IssueResponse) =>
+}: GithubIssueResponse) =>
   `https://api.github.com/repos/${organisation}/${project}/${
     __tag === "IssueResponse" ? "issues" : "pulls"
   }/${id}`;

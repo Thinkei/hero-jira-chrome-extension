@@ -1,14 +1,5 @@
-export interface PullResponse {
-  readonly __tag: "PullResponse";
-  organisation: string;
-  project: string;
-  id: string;
-  title: string;
-  jiraKey?: string;
-}
-
-export interface IssueResponse {
-  readonly __tag: "IssueResponse";
+export interface GithubIssueResponse {
+  readonly __tag: "IssueResponse" | "PullResponse";
   organisation: string;
   project: string;
   id: string;
@@ -21,7 +12,7 @@ export interface ErrorResponse {
   errorMessage: string;
 }
 
-export type Response = PullResponse | IssueResponse | ErrorResponse;
+export type Response = GithubIssueResponse | ErrorResponse;
 
 const GithubMessage = "GithubMessage";
 
@@ -39,7 +30,7 @@ const githubIssueRegex =
 const jiraKeyRegex = /\[\w*-\d*\]/;
 
 const generateResponse: (
-  tag: PullResponse["__tag"] | IssueResponse["__tag"],
+  tag: GithubIssueResponse["__tag"],
   matches: RegExpMatchArray
 ) => Response = (tag, matches) => {
   const title = document.querySelector(".js-issue-title")?.textContent;
@@ -52,7 +43,7 @@ const generateResponse: (
 
   const matchJiraKey = title.match(jiraKeyRegex);
 
-  const response: PullResponse | IssueResponse = {
+  return {
     __tag: tag,
     organisation: matches[1],
     project: matches[2],
@@ -60,8 +51,6 @@ const generateResponse: (
     jiraKey: matchJiraKey ? matchJiraKey[0].replace(/[\[\]]/g, "") : undefined,
     title,
   };
-
-  return response;
 };
 
 const githubMessageListener = (

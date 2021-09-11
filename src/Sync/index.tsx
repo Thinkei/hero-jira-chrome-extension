@@ -1,10 +1,14 @@
+import { Alert, Button, Spinner, Typography } from "hero-design";
+import { useTheme } from "styled-components";
 import React from "react";
+
 import { sendGithubMessage, Response } from "../Messaging/GithubMessage";
-import JiraCardDetail from "./JiraCardDetail";
 import CreatingJiraCardModal from "./CreatingJiraCardModal";
-import { Alert, Button, Empty, Spinner } from "hero-design";
+import JiraCardDetail from "./JiraCardDetail";
+import SelectIssue from "./SelectIssue";
 
 export default () => {
+  const theme = useTheme();
   const [response, setResponse] = React.useState<Response | undefined>();
   const [loading, setLoading] = React.useState<boolean>(true);
   const [openModal, setOpenModal] = React.useState<boolean>(false);
@@ -35,20 +39,27 @@ export default () => {
       const jiraKey = response.jiraKey;
       if (jiraKey === undefined) {
         return (
-          <>
-            <Empty
-              extra={
-                <Button
-                  icon="add"
-                  variant="filled"
-                  intent="primary"
-                  text="Create a Jira card"
-                  onClick={() => setOpenModal(true)}
-                />
-              }
-              style={{ textAlign: "center" }}
-              text="Can't extract a Jira ID from this pull/issue"
+          <div style={{ textAlign: "center" }}>
+            <Typography.Text style={{ marginBottom: theme.space.medium }}>
+              Can't find a Jira key in this PR/issue
+            </Typography.Text>
+            <Button
+              icon="add"
+              variant="filled"
+              intent="primary"
+              text="Create a Jira issue"
+              onClick={() => setOpenModal(true)}
             />
+            <div
+              style={{
+                textAlign: "center",
+                marginBottom: theme.space.medium,
+                marginTop: theme.space.medium,
+              }}
+            >
+              -- or --
+            </div>
+            <SelectIssue githubIssue={response} setResponse={setResponse} />
             {openModal && (
               <CreatingJiraCardModal
                 closeModal={() => setOpenModal(false)}
@@ -56,7 +67,7 @@ export default () => {
                 setResponse={setResponse}
               />
             )}
-          </>
+          </div>
         );
       }
       return <JiraCardDetail jiraKey={jiraKey} />;
