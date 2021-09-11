@@ -140,7 +140,7 @@ const Body = ({
       // @TODO: Paginate this api and async search
       url: `rest/api/2/search?jql=project=${
         selectedProject ? selectedProject.key : ""
-      } AND issueType!=Subtask&fields=summary,imgUrl&maxResults=1000`,
+      } AND issueType!=Subtask&fields=summary,issuetype&maxResults=1000`,
       method: "GET",
     },
     { manual: true }
@@ -154,6 +154,18 @@ const Body = ({
         text: `[${key}] ${fields.summary}`,
         value: id,
       })),
+    [parentIssues]
+  );
+
+  const parentIssueIcons: IconUrls = React.useMemo(
+    () =>
+      parentIssues.reduce(
+        (acc, { id, fields }) => ({
+          ...acc,
+          [id]: fields.issuetype.iconUrl,
+        }),
+        {}
+      ) ?? {},
     [parentIssues]
   );
 
@@ -240,6 +252,12 @@ const Body = ({
               query={parentTaskQuery}
               onQueryChange={setParentTaskQuery}
               options={parentIssueOptions}
+              optionRenderer={({ option }) => (
+                <OptionWithIcon
+                  icon={parentIssueIcons[option.value]}
+                  text={option.text}
+                />
+              )}
             />
           </Typography.Text>
         </FieldWrapper>

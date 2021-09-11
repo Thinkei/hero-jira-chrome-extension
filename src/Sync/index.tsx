@@ -40,7 +40,10 @@ export default () => {
       if (jiraKey === undefined) {
         return (
           <div style={{ textAlign: "center" }}>
-            <Typography.Text style={{ marginBottom: theme.space.medium }}>
+            <Typography.Text
+              intent="subdued"
+              style={{ marginBottom: theme.space.medium }}
+            >
               Can't find a Jira key in this PR/issue
             </Typography.Text>
             <Button
@@ -50,7 +53,8 @@ export default () => {
               text="Create a Jira issue"
               onClick={() => setOpenModal(true)}
             />
-            <div
+            <Typography.Text
+              intent="subdued"
               style={{
                 textAlign: "center",
                 marginBottom: theme.space.medium,
@@ -58,7 +62,7 @@ export default () => {
               }}
             >
               -- or --
-            </div>
+            </Typography.Text>
             <SelectIssue githubIssue={response} setResponse={setResponse} />
             {openModal && (
               <CreatingJiraCardModal
