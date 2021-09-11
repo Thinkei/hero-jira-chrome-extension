@@ -2,7 +2,7 @@ version: 2.1
 orbs:
   jq: circleci/jq@2.2.0
 jobs:
-  build:
+  publish:
     docker:
       - image: cimg/node:16.8.0
     environment:
@@ -35,3 +35,13 @@ jobs:
               curl -H "Authorization: Bearer ${ACCESS_TOKEN}" -H "x-goog-api-version: 2" -X PUT -T hero-jira.zip -v "https://www.googleapis.com/upload/chromewebstore/v1.1/items/${APP_ID}"
               curl -H "Authorization: Bearer ${ACCESS_TOKEN}" -H "x-goog-api-version: 2" -H "Content-Length: 0" -X POST -v "https://www.googleapis.com/chromewebstore/v1.1/items/${APP_ID}/publish"
             fi
+workflows:
+  version: 2
+  build:
+    jobs:
+      - publish:
+          context: org-global
+          filters:
+            branches:
+              only:
+                - release
