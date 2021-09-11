@@ -24,7 +24,7 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build && sed -i.bak 's/Hero Jira Dev/Hero Jira/g' build/manifest.json && rm build/manifest.json.bak",
+    "build": "react-scripts build && sh ./build-for-prod.sh",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "prepare": "husky install"
