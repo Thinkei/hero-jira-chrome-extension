@@ -39,6 +39,9 @@ export interface Issue {
       iconUrl: string;
     };
   };
+  renderedFields?: {
+    description: string;
+  };
 }
 
 export interface IssueCreationFields {
