@@ -2,12 +2,14 @@ import { Alert, Spinner, Typography } from "hero-design";
 import React from "react";
 import useAxios from "axios-hooks";
 import { Button } from "hero-design";
+import { useTheme } from "styled-components";
 
 import { Issue } from "../../JiraClient/types";
 import Status from "./Status";
 import JiraConfigContext from "../../context/JiraConfigContext";
 
 export default ({ jiraKey }: { jiraKey: string }) => {
+  const theme = useTheme();
   const [{ data: issue, loading, error }] = useAxios<Issue>(
     `/rest/api/2/issue/${jiraKey}`
   );
@@ -25,25 +27,47 @@ export default ({ jiraKey }: { jiraKey: string }) => {
 
   return (
     <>
-      <Typography.Title level={3}>Jira card</Typography.Title>
-      <ul>
-        <li>
-          <Button.Link
-            target="_blank"
-            text={jiraKey}
-            href={`${jiraConfig.host}/browse/${jiraKey}`}
-          />
-        </li>
-        <li>Title: {issue.fields.summary}</li>
-        <li>Summary: {issue.fields.description}</li>
-        <li>
-          Status:
+      <div
+        style={{
+          marginBottom: theme.space.small,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
+        <Button.Link
+          target="_blank"
+          text={jiraKey}
+          href={`${jiraConfig.host}/browse/${jiraKey}`}
+        />
+        <Typography.Text tagName="div">
+          {"Status: "}
           <Status
             currentStatusName={issue.fields.status.name}
             jiraKey={jiraKey}
           />
-        </li>
-      </ul>
+        </Typography.Text>
+      </div>
+      <Typography.Title level={5} style={{ marginBottom: theme.space.medium }}>
+        <>
+          <img
+            src={issue.fields.issuetype.iconUrl}
+            style={{
+              height: 24,
+              width: 24,
+              marginRight: theme.space.small,
+              verticalAlign: "middle",
+              display: "inline-block",
+            }}
+          />
+          {issue.fields.summary}
+        </>
+      </Typography.Title>
+      <Typography.Text>
+        <b>Description:</b>
+        <br />
+        {issue.fields.description}
+      </Typography.Text>
     </>
   );
 };
