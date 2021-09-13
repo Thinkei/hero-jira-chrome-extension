@@ -74,6 +74,6 @@ export default () => {
           </div>
         );
       }
-      return <JiraCardDetail jiraKey={jiraKey} />;
+      return <JiraCardDetail githubIssue={response} />;
   }
 };

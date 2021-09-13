@@ -1,10 +1,13 @@
 import { Alert, Button, Spinner, Tooltip, Typography } from "hero-design";
-import { useTheme } from "styled-components";
 import React from "react";
+import styled, { useTheme } from "styled-components";
 import useAxios from "axios-hooks";
-import styled from "styled-components";
 
-import { Issue } from "../../JiraClient/types";
+import {
+  GithubIssueResponse,
+  GithubStatus,
+} from "../../Messaging/GithubMessage";
+import { Issue, Transition } from "../../JiraClient/types";
 import JiraConfigContext from "../../context/JiraConfigContext";
 import Status from "./Status";
 
@@ -39,8 +42,35 @@ const DescriptionStyledWrapper = styled.div`
   }
 `;
 
-export default ({ jiraKey }: { jiraKey: string }) => {
+const StatusWarning = ({
+  githubStatus,
+  jiraStatus,
+}: {
+  githubStatus?: GithubStatus;
+  jiraStatus?: Transition["name"];
+}) => {
   const theme = useTheme();
+
+  const statusOutdated = React.useMemo(() => {
+    if (githubStatus === "Open" && jiraStatus === "To Do") return true;
+    if (githubStatus === "Merged" && jiraStatus !== "Done") return true;
+    if (githubStatus !== "Merged" && jiraStatus == "Done") return true;
+    return false;
+  }, [githubStatus, jiraStatus]);
+
+  return statusOutdated ? (
+    <Alert
+      variant="outlined"
+      intent="warning"
+      style={{ marginBottom: theme.space.medium }}
+      content="This ticket status is outdated."
+    />
+  ) : null;
+};
+
+export default ({ githubIssue }: { githubIssue: GithubIssueResponse }) => {
+  const theme = useTheme();
+  const { jiraKey = "" } = githubIssue;
   const jiraConfig = React.useContext(JiraConfigContext);
   const jiraLink = `${jiraConfig.host}/browse/${jiraKey}`;
   const [linkCopied, setLinkCopied] = React.useState(false);
@@ -49,13 +79,15 @@ export default ({ jiraKey }: { jiraKey: string }) => {
     `/rest/api/2/issue/${jiraKey}?fields=status,summary,description,issuetype&expand=renderedFields.description`
   );
 
-  const issueDescription = React.useMemo(
+  const issueDescription = React.useMemo<string>(
     () =>
       (issue?.renderedFields?.description || issue?.fields.description || "N/A")
+        // attachments in the description missing the host
         .replace(
           /\/secure\/attachment/g,
           `${jiraConfig.host}/secure/attachment`
         )
+        // videos in description is redered with <embed> which is not playable in an extension
         .replace(/<embed /g, "<video autoplay controls "),
     [issue, jiraConfig.host]
   );
@@ -72,6 +104,10 @@ export default ({ jiraKey }: { jiraKey: string }) => {
 
   return (
     <>
+      <StatusWarning
+        githubStatus={githubIssue.status}
+        jiraStatus={issue.fields.status.name}
+      />
       <div
         style={{
           marginBottom: theme.space.small,
@@ -82,7 +118,7 @@ export default ({ jiraKey }: { jiraKey: string }) => {
       >
         <div>
           <Tooltip
-            content={linkCopied ? "Copy! :)" : "Copy?"}
+            content={linkCopied ? "Copied! :)" : "Copy?"}
             target={
               <Button.Icon
                 icon="link-2"

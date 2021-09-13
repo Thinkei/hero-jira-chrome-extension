@@ -1,9 +1,16 @@
+const githubStatuses = ["Draft", "Open", "Merged", "Closed"] as const;
+export type GithubStatus = typeof githubStatuses[number];
+
+const isGithubStatus = (value: string): value is GithubStatus =>
+  githubStatuses.includes(value as GithubStatus);
+
 export interface GithubIssueResponse {
   readonly __tag: "IssueResponse" | "PullResponse";
   organisation: string;
   project: string;
   id: string;
   title: string;
+  status?: GithubStatus;
   jiraKey?: string;
 }
 
@@ -34,6 +41,9 @@ const generateResponse: (
   matches: RegExpMatchArray
 ) => Response = (tag, matches) => {
   const title = document.querySelector(".js-issue-title")?.textContent;
+  const status = document
+    .querySelector(".State[title*='Status']")
+    ?.textContent?.trim();
 
   if (title == null)
     return {
@@ -48,6 +58,7 @@ const generateResponse: (
     organisation: matches[1],
     project: matches[2],
     id: matches[3],
+    status: status && isGithubStatus(status) ? status : undefined,
     jiraKey: matchJiraKey ? matchJiraKey[0].replace(/[\[\]]/g, "") : undefined,
     title,
   };
