@@ -52,9 +52,12 @@ const StatusWarning = ({
   const theme = useTheme();
 
   const statusOutdated = React.useMemo(() => {
+    if (githubStatus === undefined || jiraStatus === undefined) return false;
+
     if (githubStatus === "Open" && jiraStatus === "To Do") return true;
     if (githubStatus === "Merged" && jiraStatus !== "Done") return true;
     if (githubStatus !== "Merged" && jiraStatus == "Done") return true;
+
     return false;
   }, [githubStatus, jiraStatus]);
 
