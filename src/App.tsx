@@ -112,7 +112,7 @@ function App() {
                 },
                 {
                   id: 2,
-                  title: "Configuration",
+                  title: "Config",
                   panel: <Configuration onSaveConfig={onSaveConfig} />,
                   icon: "adjustment",
                 },

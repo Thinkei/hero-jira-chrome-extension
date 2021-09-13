@@ -46,17 +46,6 @@ export default ({
   } = useConfigFieldsWithContext<GithubConfig>(GithubConfigContext);
 
   const [dirty, setDirty] = React.useState<boolean>(false);
-  const [showedSuccess, setShowedSuccess] = React.useState(false);
-
-  React.useEffect(() => {
-    let timerId: NodeJS.Timeout;
-    if (showedSuccess === true) {
-      timerId = setTimeout(() => setShowedSuccess(false), 2000);
-    }
-    return () => {
-      clearTimeout(timerId);
-    };
-  }, [showedSuccess]);
 
   const saveToStorage = React.useCallback(() => {
     const authConfig: AuthConfiguration = {
@@ -65,7 +54,6 @@ export default ({
     };
     Storage.set(authConfig, () => {
       setDirty(false);
-      setShowedSuccess(true);
     });
     onSaveConfig(authConfig);
   }, [jiraConfigFields, githubConfigFields]);
@@ -210,6 +198,7 @@ export default ({
           display: "flex",
           alignItems: "center",
           marginTop: theme.space.medium,
+          justifyContent: "flex-end",
         }}
       >
         <Button
@@ -218,25 +207,6 @@ export default ({
           text="Save"
           size="small"
         />
-        {showedSuccess && (
-          <Typography.Text
-            fontSize={12}
-            intent="success"
-            style={{
-              marginLeft: theme.space.xsmall,
-              display: "flex",
-              alignItems: "center",
-            }}
-          >
-            <Icon
-              icon="checkmark"
-              style={{
-                marginRight: theme.space.xxsmall,
-              }}
-            />
-            Success!
-          </Typography.Text>
-        )}
       </div>
     </form>
   );

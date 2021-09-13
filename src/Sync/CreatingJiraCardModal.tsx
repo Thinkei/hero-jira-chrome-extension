@@ -195,47 +195,57 @@ const Body = ({
         />
       )}
       <FieldWrapper>
-        <Typography.Text tagName="label" fontWeight="semi-bold">
+        <Typography.Text
+          tagName="label"
+          fontWeight="semi-bold"
+          htmlFor="select-project"
+        >
           Project
+        </Typography.Text>
+        <Select
+          id="select-project"
+          value={projectId}
+          options={projectOptions}
+          onChange={(value) =>
+            changeFormValue({ projectId: value ? String(value) : undefined })
+          }
+          placeholder="Select a project"
+          query={projectQuery}
+          onQueryChange={setProjectQuery}
+          loading={loading}
+          optionRenderer={({ option }) => (
+            <OptionWithIcon
+              icon={projectAvatars[option.value]}
+              text={option.text}
+            />
+          )}
+        />
+      </FieldWrapper>
+      {projectId && (
+        <FieldWrapper>
+          <Typography.Text
+            tagName="label"
+            fontWeight="semi-bold"
+            htmlFor="select-issue-type"
+          >
+            Issue type
+          </Typography.Text>
           <Select
-            value={projectId}
-            options={projectOptions}
+            id="select-issue-type"
+            value={issuetypeId}
             onChange={(value) =>
-              changeFormValue({ projectId: value ? String(value) : undefined })
+              changeFormValue({ issuetypeId: String(value) })
             }
-            placeholder="Select a project"
-            query={projectQuery}
-            onQueryChange={setProjectQuery}
-            loading={loading}
+            placeholder="Select an issue type"
+            options={issueTypeOptions}
+            disabled={!projectId}
             optionRenderer={({ option }) => (
               <OptionWithIcon
-                icon={projectAvatars[option.value]}
+                icon={issueIcons[option.value]}
                 text={option.text}
               />
             )}
           />
-        </Typography.Text>
-      </FieldWrapper>
-      {projectId && (
-        <FieldWrapper>
-          <Typography.Text tagName="label" fontWeight="semi-bold">
-            Issue type
-            <Select
-              value={issuetypeId}
-              onChange={(value) =>
-                changeFormValue({ issuetypeId: String(value) })
-              }
-              placeholder="Select an issue type"
-              options={issueTypeOptions}
-              disabled={!projectId}
-              optionRenderer={({ option }) => (
-                <OptionWithIcon
-                  icon={issueIcons[option.value]}
-                  text={option.text}
-                />
-              )}
-            />
-          </Typography.Text>
         </FieldWrapper>
       )}
       {selectedIssueType && selectedIssueType.subtask && (
@@ -310,7 +320,7 @@ const Footer = ({
   const { projectId, issuetypeId, summary } = formState;
 
   return (
-    <div>
+    <>
       <Button variant="text" text="Cancel" onClick={onClose} />
       <Button
         text="Create"
@@ -318,7 +328,7 @@ const Footer = ({
         loading={loading}
         disabled={!projectId || !issuetypeId || !summary}
       />
-    </div>
+    </>
   );
 };
 

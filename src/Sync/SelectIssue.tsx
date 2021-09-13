@@ -181,7 +181,14 @@ export default ({
           query={issueQuery}
           placeholder="Select an issue"
           onQueryChange={setIssueQuery}
-          noResults="No results"
+          noResults={
+            <Typography.Text
+              intent="subdued"
+              style={{ padding: theme.space.small, textAlign: "center" }}
+            >
+              No results
+            </Typography.Text>
+          }
           options={issueOptions}
           optionRenderer={({ option }) => (
             <OptionWithIcon
