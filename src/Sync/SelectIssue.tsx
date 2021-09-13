@@ -18,8 +18,7 @@ import { generatePullEndpoint, useGithubApi } from "../GithubApi";
 type SelectOptions = React.ComponentProps<typeof Select>["options"];
 type IconUrls = Record<string, string>;
 
-const sampleJQL =
-  'project="PRO" AND summary~"issue title" AND issueKey="PRO-42" AND issueType="Task"';
+const sampleJQL = 'assignee=currentuser() and status!="Done"';
 
 const OptionWithIcon = ({ icon, text }: { icon: string; text: string }) => {
   const theme = useTheme();
@@ -50,7 +49,7 @@ export default ({
   const theme = useTheme();
 
   const [errors, setErrors] = React.useState<string[]>([]);
-  const [jql, setJql] = React.useState<string>('key="PRO-42"');
+  const [jql, setJql] = React.useState<string>(sampleJQL);
 
   const [issueId, setIssueId] = React.useState<string | number>("");
   const [issueQuery, setIssueQuery] = React.useState<string | undefined>(
@@ -68,6 +67,10 @@ export default ({
       },
       { manual: true }
     );
+
+  React.useEffect(() => {
+    fetchIssues();
+  }, []);
 
   const issueOptions: SelectOptions = React.useMemo(
     () =>
@@ -169,34 +172,24 @@ export default ({
         {errors.length > 0 && (
           <Typography.Text intent="error">{errors.join("\n")}</Typography.Text>
         )}
-        {issueOptions.length > 0 ? (
-          <Select
-            id="assignIssueID"
-            value={issueId}
-            style={{ marginTop: theme.space.small }}
-            onChange={(value) => setIssueId(value ?? "")}
-            loading={loadingIssues}
-            query={issueQuery}
-            placeholder="Select an issue"
-            onQueryChange={setIssueQuery}
-            options={issueOptions}
-            optionRenderer={({ option }) => (
-              <OptionWithIcon
-                icon={issueIcons[option.value]}
-                text={option.text}
-              />
-            )}
-          />
-        ) : (
-          <Typography.Text
-            fontSize={10}
-            intent="subdued"
-            style={{ textAlign: "center" }}
-          >
-            Sample query:
-            <code style={{ marginLeft: theme.space.small }}>{sampleJQL}</code>
-          </Typography.Text>
-        )}
+        <Select
+          id="assignIssueID"
+          value={issueId}
+          style={{ marginTop: theme.space.small }}
+          onChange={(value) => setIssueId(value ?? "")}
+          loading={loadingIssues}
+          query={issueQuery}
+          placeholder="Select an issue"
+          onQueryChange={setIssueQuery}
+          noResults="No results"
+          options={issueOptions}
+          optionRenderer={({ option }) => (
+            <OptionWithIcon
+              icon={issueIcons[option.value]}
+              text={option.text}
+            />
+          )}
+        />
       </Typography.Text>
       <Button
         variant="text"
