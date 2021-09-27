@@ -5788,15 +5788,14 @@ he@^1.2.0:
   resolved "https://registry.yarnpkg.com/he/-/he-1.2.0.tgz#84ae65fa7eafb165fddb61566ae14baf05664f0f"
   integrity sha512-F/1DnUGPopORZi0ni+CvrCgHQ5FyEAHRLSApuYWMmrbSwoN2Mn/7k+Gl38gJnR7yyDZk6WLXwiGod1JOWNDKGw==
 
-hero-design@^4.0.1:
-  version "4.0.1"
-  resolved "https://registry.yarnpkg.com/hero-design/-/hero-design-4.0.1.tgz#5ec979886b3dfba3bad2db973dc5907359f4eb5f"
-  integrity sha512-7Xnt27ddPQLh5Ye0744AMi4YnRd/dai9tr//3u1vz5lYvA88alomSh+gdFle8b2X4Ia9au5en+KATzBOgRgTkg==
+hero-design@^4.0.3:
+  version "4.0.3"
+  resolved "https://registry.yarnpkg.com/hero-design/-/hero-design-4.0.3.tgz#9ae58f7b4a5bb8b25192854227eb0673c19c4f85"
+  integrity sha512-WuxKjpBlpUEHY14jpTNEMsBYY8L8K6hVN+MYBwJOOcVohMSS5jSOVUeeESrtAUAoovXOBgBkmvhan0nt+u5W2g==
   dependencies:
     "@popperjs/core" "^2.9.1"
     date-fns "^2.16.1"
     downshift "^6.0.6"
-    lodash "^4.17.19"
     react-popper "^2.2.4"
     react-table "^7.6.2"
     styled-components "^5.2.1"
